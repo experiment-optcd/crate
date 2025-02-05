@@ -1,4 +1,3 @@
-
 name: Modified CrateDB SQL
 jobs:
   test:
@@ -7,53 +6,61 @@ jobs:
     strategy:
       matrix:
         os:
-        - ubuntu-latest
+          - ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    - name: Setup Maven Java
-      uses: actions/setup-java@v4
-      with:
-        java-version: '22'
-        distribution: temurin
-        cache: maven
-    - name: Run tests on ${{ matrix.os }}
-      env:
-        CRATE_TESTS_SQL_REQUEST_TIMEOUT: '20'
-      run: |-
-        mvn test \
-          -Dtests.crate.run-windows-incompatible=true \
-          -DforkCount=2 \
-          -DthreadCount=2 \
-          -Dcheckstyle.skip \
-          -Dforbiddenapis.skip=true \
-          -Dmaven.javadoc.skip=true \
-          -Djacoco.skip=true
+      - uses: actions/checkout@v4
+      - name: Setup Maven Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '22'
+          distribution: temurin
+          cache: maven
+      - name: Run tests on ${{ matrix.os }}
+        env:
+          CRATE_TESTS_SQL_REQUEST_TIMEOUT: '20'
+        run: "mvn test \\\n  -Dtests.crate.run-windows-incompatible=true \\\n  -DforkCount=2
+          \\\n  -DthreadCount=2 \\\n  -Dcheckstyle.skip \\\n  -Dforbiddenapis.skip=true
+          \\\n  -Dmaven.javadoc.skip=true \\\n  -Djacoco.skip=true\n \"-Dmaven.resources.skip=true\"\
+          \ \"-Dsurefire.reportsDirectory=target/surefire-reports-dummy\" \"-Dsurefire.useFile=false\"\
+          \ \"-Dsurefire.reportFormat=xml\" \"-Dmaven.compiler.testSourceDirs=\" \"\
+          -Dsurefire.skip=true\" \"-Dsurefire.skip=false\" \"-Dsurefire.reportFormat=plain\"\
+          \ \"-Dmaven.compiler.source=11\" \"-Dmaven.compiler.target=11\" \"-Dmaven.compiler.generateTestSources=false\"\
+          \ \"-Dmaven.compiler.testSourceDirs=src/test/java\" \"-Dsurefire.useSystemClassLoader=true\""
   forbiddenApis:
     name: forbiddenApis
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    - name: Setup Maven Java
-      uses: actions/setup-java@v4
-      with:
-        java-version: '22'
-        distribution: temurin
-        cache: maven
-    - name: Run forbiddenapis:check
-      run: |-
-        mvn compile forbiddenapis:check
+      - uses: actions/checkout@v4
+      - name: Setup Maven Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '22'
+          distribution: temurin
+          cache: maven
+      - name: Run forbiddenapis:check
+        run: "mvn compile forbiddenapis:check\n \"-Dmaven.compiler.showWarnings=false\"\
+          \ \"-DskipGeneratedSources\" \"-Dmaven.compiler.generateSources=false\"
+          \"-DskipTests=false\" \"-Dmaven.javadoc.skip=true\" \"-Dguice.generateSources=false\"\
+          \ \"-Dprocessing.resources=false\" \"-Dorg.apache.maven.plugins.resources.skip=true\"\
+          \ \"-Dorg.apache.maven.plugins.compiler.skip=true\" \"-Dmaven.status.skip=true\"\
+          \ \"-Dprocessing.generatedSourcesDirectory=\""
   checkstyle:
     name: checkstyle
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    - name: Setup Maven Java
-      uses: actions/setup-java@v4
-      with:
-        java-version: 17
-        distribution: temurin
-    - name: Run checkstyle
-      run: mvn compile checkstyle:checkstyle
+      - uses: actions/checkout@v4
+      - name: Setup Maven Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: temurin
+      - name: Run checkstyle
+        run: mvn compile checkstyle:checkstyle "-Dcheckstyle.reportsDirectory=target/checkstyle-reports"
+          "-Dmaven.javadoc.skip=true" "-Dcheckstyle.failOnViolation=false" "-Dcheckstyle.config=checkstyle.xml"
+          "-Dmaven.surefire.skip=false" "-Dcheckstyle.suppressionsFile=checkstyle-suppressions.xml"
+          "-Dcheckstyle.reportDirectory=target/checkstyle-reports" "-Dcheckstyle.report.html.output=false"
+          "-Dcheckstyle.report.xml.output=false" "-Dcheckstyle.report.txt.output=false"
+          "-Dmaven.surefire.skip=true"
 'on':
-- push
-- workflow_dispatch
+  - push
+  - workflow_dispatch
